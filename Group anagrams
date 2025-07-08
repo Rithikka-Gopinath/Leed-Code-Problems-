@@ -1,0 +1,136 @@
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+typedef struct 
+{
+    char **data;
+    int size;
+    int capacity; 
+} StringVector;
+
+StringVector * init_vector() 
+{
+    StringVector *ret = malloc(sizeof(StringVector));
+
+    ret->size = 0;
+    ret->capacity = 1 << 5;
+    ret->data = malloc(ret->capacity * sizeof(char *));
+
+    return ret;
+}
+
+void add_string(StringVector *vector, const char *str) 
+{
+    if (vector->size >= vector->capacity) 
+    {
+        vector->capacity <<= 1; 
+        vector->data = realloc(vector->data, vector->capacity * sizeof(char *));
+    }
+
+    vector->data[vector->size++] = strdup(str);
+}
+
+void free_vector(StringVector *vector) 
+{
+    // for (int i = 0; i < vector->size; i++) 
+    //     free(vector->data[i]);
+
+    // free(vector->data);  reusing in groupAnagrams
+    free(vector);
+}
+
+#define ALPHABET_SIZE 26
+
+typedef struct 
+{
+    int counter[ALPHABET_SIZE]; 
+    StringVector *vec;
+    UT_hash_handle hh;
+} HashItem;
+
+HashItem *find_item(HashItem *hash_table, int *key) 
+{
+    HashItem *item;
+
+    HASH_FIND(hh, hash_table, key, sizeof(int) * ALPHABET_SIZE, item);
+    return item;
+}
+
+int add_item(HashItem **hash_table, int *key, char *str) 
+{
+    HashItem *item = find_item(*hash_table, key);
+    if (item)
+    {
+        add_string(item->vec, str);
+        return 0;
+    }
+
+    item = malloc(sizeof(HashItem));
+    memcpy(item->counter, key, sizeof(int) * ALPHABET_SIZE);
+    item->vec = init_vector();
+    add_string(item->vec, str);
+
+    HASH_ADD(hh, *hash_table, counter, sizeof(int) * ALPHABET_SIZE, item);
+
+    return 1;
+}
+
+void delete_item(HashItem **hash_table, int *key) 
+{
+    HashItem *item = find_item(*hash_table, key);
+    if (!item)
+        return;
+
+    HASH_DEL(*hash_table, item);
+    free_vector(item->vec);
+    free(item);
+}
+
+void free_hash_table(HashItem **hash_table) 
+{
+    HashItem *current_item, *tmp;
+    HASH_ITER(hh, *hash_table, current_item, tmp) 
+    {
+        HASH_DEL(*hash_table, current_item);
+        free_vector(current_item->vec);
+        free(current_item);
+    }
+}
+
+char ***groupAnagrams(char **strs, int strsSize, int *returnSize, int **returnColumnSizes) 
+{
+    *returnSize = 0;
+
+    int counter[ALPHABET_SIZE] = {0};
+    HashItem *map = 0;
+
+    for (int i = 0; i < strsSize; i++)
+    {
+        char *ptr = strs[i];
+        while (*ptr)
+            ++counter[*ptr++ - 'a'];
+        
+        *returnSize += add_item(&map, counter, strs[i]);
+        
+        memset(counter, 0, ALPHABET_SIZE * sizeof(int));
+    }
+
+    char ***ret = malloc(*returnSize * sizeof(char **));
+    int top = 0;
+    *returnColumnSizes = malloc(*returnSize * sizeof(int));
+
+    HashItem *current_item, *tmp;
+    HASH_ITER(hh, map, current_item, tmp) 
+    {
+        ret[top] = current_item->vec->data;
+        returnColumnSizes[0][top] = current_item->vec->size;
+        ++top;
+    }
+
+    free_hash_table(&map);
+
+    return ret;
+}
+
