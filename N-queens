@@ -1,0 +1,120 @@
+///SAVES THE CURRENT QUEEN PLACEMENTS TO A 'TABLE'
+///THEN MOVES TO AN OTHER ONE
+void save( char ****table, int * current_table, int n, int *occupied_columns)
+{
+    (*table)[*current_table]= (char**)calloc(n,sizeof(char*));
+    ///ALLOC COLUMNS
+    if((*table)[*current_table] == NULL)
+    {
+        return;
+    }
+    for(int i=0;i<n;i++)
+    {
+        (*table)[*current_table][i] = (char*)calloc(n+1,sizeof(char));
+        ///ALLOC LINES
+        if((*table)[*current_table][i] == NULL)
+        {
+            for(int j=0;j<i;j++)
+            {
+                free((*table)[*current_table][j]);
+            }
+            free((*table)[*current_table]);    
+            return;
+        }
+        ///FILL LINES WITH DOTS FIRST
+        for(int j=0;j<n;j++)
+        {
+            (*table)[*current_table][i][j] = '.';
+        }
+        (*table)[*current_table][i][n] = '\0';
+    }
+    for(int j=0;j<n;j++)
+    {   
+        ///PUT THE QUEENS WHERE THEY'RE FOUND
+        (*table)[*current_table][occupied_columns[j]][j] = 'Q';
+    }
+    ///GOTO NEXT TABLE
+    (*current_table)++;
+}
+
+///THE FUNCTION THAT FINDS ALL SOLUTIONS
+///GOES LINE BY LINE AND TRIES TO PLACE A QUEEN ON EACH COLUMN AVAILABLE.
+///ONCE THE PLACEMENT OF A QUEEN IN THE LAST LINE HAS BEEN FOUND
+///THE STOLUTION IS STORED IN TABLE
+void backt ( int line, int max_n, char ****table, int *current_table,
+             int * occupied_columns, int * diag1, int *diag2)
+///****table = POINTER TO AN ARRAY OF CHAR MATRICES
+{
+    for(int col =0; col < max_n; col++)
+    {
+        if(occupied_columns[col]==-1 &&
+           diag1[line - col + max_n -1]==-1 &&
+           diag2[line+col]==-1)
+        {
+            ///IF NOT OCCUPIED, MARK THE POSITIONS
+            ///IN THE AUXILIARY ARRAYS
+            occupied_columns[col]=line;
+            diag1[line - col + max_n -1]=line;
+            diag2[line+col] = line;
+            if(line +1 == max_n)
+            {
+                ///IF WE'RE AT THE LAST LINE
+                ///AND ALREADY PLACED A QUEEN
+                ///THEN SAVE THIS CONFIGURATION
+                save(table, current_table, max_n, occupied_columns);
+            }
+            else
+            {
+                ///THIS LINE'S QUEEN HAS BEEN PLACED
+                ///PROCEED TO THE NEXT ONE
+                backt(line+1, max_n, table, current_table,
+                      occupied_columns,diag1,diag2);
+            }
+            ///UN-MARK THE QUEEN PLACEMENT
+            occupied_columns[col]=-1;
+            diag1[line - col + max_n -1]=-1;
+            diag2[line+col]=-1;
+            ///TRY TO PLACE IN THE NEXT COLUMN
+        }
+    }
+}
+
+char*** solveNQueens(int n, int* returnSize, int** returnColumnSizes) {
+   ///ALLOCATE MEMORY FOR AUXILIARY ARRAYS
+   int *occupied_columns = (int *)calloc(n,sizeof(int));
+   int *diag1 = (int *)calloc(2*n + 1,sizeof(int)); 
+   int *diag2 = (int *)calloc(2*n + 1,sizeof(int));
+   for(int i=0;i<n;i++){occupied_columns[i] = -1;}
+   for(int i=0;i<(2*n+1);i++){diag1[i] = diag2[i] = -1;}
+   int alloc_size=0;
+   ///https://en.wikipedia.org/wiki/Eight_queens_puzzle
+   switch(n)
+   {
+        case 1:alloc_size =1;break;
+        case 2:alloc_size = 0;break;
+        case 3:alloc_size = 0;break;
+        case 4:alloc_size = 2;break;
+        case 5:alloc_size = 10;break;
+        case 6:alloc_size =4;break;
+        case 7:alloc_size=40;break;
+        case 8:alloc_size=92;break;
+        default:alloc_size=352;break;
+   }
+   ///EACH SIZE COUNT HAS A CORESPONDING SOLUTION COUNT
+   char ***tables= (char***)calloc(alloc_size,sizeof(char**));
+   int current_table= 0;
+   /// FUNCTION CALL
+   backt(0,n,&tables,&current_table, occupied_columns, diag1, diag2);
+   ///HOW MANY SOLUTIONS THE FUNCTIONS FOUND
+   ///COULD BE REPLACED BY ALLOC_SIZE, BUT
+   ///IT HAD TO BE MADE USEFULL
+   *returnSize = current_table;
+   *returnColumnSizes=(int*)calloc(*returnSize, sizeof(int));
+   for(int i=0;i<*returnSize;i++)
+   {(*returnColumnSizes)[i]= n;}
+   ///FREE THE USED MEMORY
+   free(occupied_columns);
+   free(diag1);
+   free(diag2);
+   return tables;
+}
