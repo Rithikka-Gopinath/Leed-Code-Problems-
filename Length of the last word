@@ -1,0 +1,19 @@
+int lengthOfLastWord(char* s) {
+    u_int16_t size,cnt=0;
+    size=strlen(s)-1;
+    while(s[size]==' ')
+    {
+        size--;
+    }
+    while(s[size]!=' ' && size>0)
+    {
+        
+        ++cnt;
+        size--;
+    }
+    if(size==0 && s[size]!=' ')
+    {
+        cnt++;
+    }
+    return cnt;
+}
