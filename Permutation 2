@@ -1,0 +1,59 @@
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+
+int compare(const void* a, const void* b){
+    return *(int*)a - (*(int*)b);
+}
+
+int count_unique_perms(int n, int* nums){
+    qsort(nums, n, sizeof(int), compare);
+    int total = 1;
+    for(int i = 2; i<=n; i++) total *= i; //faculty from n
+    
+    int dupFactorial = 1;
+    for(int i = 1, freq = 1; i < n; i++){
+        if(nums[i] == nums[i-1])    freq++;
+
+        else{
+            for(int j = 2; j < freq; j++) dupFactorial *= j;
+            freq = 1;
+        }
+
+    }
+    return total / dupFactorial;
+}
+void back(int** res, int* nums, int n, int*returnSize,int**returnColSizes, int depth, int* path, int* used){
+
+    if(depth == n){
+        res[*returnSize] = malloc(depth * sizeof(int));
+        (*returnColSizes)[*returnSize] = depth;
+        memcpy(res[*returnSize], path, depth*sizeof(int));
+        (*returnSize)++;
+        return;
+    }
+
+    for(int i = 0; i < n; i++){
+        if(used[i] || (i > 0 && nums[i] == nums[i-1] && !used[i-1]))       continue;
+        used[i] = 1;
+        path[depth] = nums[i];
+        
+        back(res, nums, n, returnSize, returnColSizes, depth+1, path, used);
+        used[i] = 0;
+    }
+
+}
+int** permuteUnique(int* nums, int n, int* returnSize, int** returnColumnSizes) {
+    *returnSize = 0;
+    int total = count_unique_perms(n, nums);
+    int** res = malloc(total * sizeof(int*));
+    *returnColumnSizes = malloc(total * sizeof(int));
+    int used[64] = {0};
+    int path[n];
+    memset(path, 0, n* sizeof(int));
+    back(res, nums, n, returnSize, returnColumnSizes, 0, path, used);
+
+    return res;
+}
