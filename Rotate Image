@@ -1,0 +1,23 @@
+void rotate(int** matrix, int matrixSize, int* matrixColSize) {
+
+    int row = matrixSize;
+
+    int col = *matrixColSize;
+
+    if(row <= 0 || col <= 0)
+        return;
+    
+    int temp;
+    for(int i = 0; i < row/2; i++) {
+        for(int j = i; j < (row - 1 - i); j++) {
+
+
+            temp = matrix[i][j];
+            matrix[i][j] = matrix[row - j - 1][i];
+            matrix[row - j -1][i] = matrix[row - i - 1][row - j - 1];
+            matrix[row - i - 1][row - j - 1] = matrix[j][row - i -1];
+            matrix[j][row - i - 1] = temp;
+
+        }
+    }
+}
