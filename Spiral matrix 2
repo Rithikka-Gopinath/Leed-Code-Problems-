@@ -1,0 +1,67 @@
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** generateMatrix(int n, int* returnSize, int** returnColumnSizes) 
+{
+    int i, j, k, l;
+    int number = 1;
+	int length = n * n;
+	
+    int** matrix = (int**) malloc(n * sizeof(int*));
+    int* colSizes = (int*) malloc(n * sizeof(int));
+    *returnSize = n;
+    for (int i = 0; i < n; i++)
+    {
+        colSizes[i] = n;
+        matrix[i] = (int*) malloc(n * sizeof(int));
+    }
+    
+    *returnColumnSizes = colSizes;
+
+    i = 0;
+    j = 0; 
+    k = 0;
+    l = 0;
+
+    while(number <= length)
+    {
+        while(j < n - k) 
+        {
+            matrix[i][j] = number;
+            number++;
+            j++;
+        }
+        j--;
+        i++;
+        while(i < n - k)
+        {
+            matrix[i][j] = number;
+            number++;
+            i++;
+        }
+        i--;
+        j--;
+        while(j > l - 1)
+        {
+            matrix[i][j] = number;
+            number++;
+            j--;
+        }
+        j++;
+        i--;
+        l++;
+        while(i > l - 1)
+        {
+            matrix[i][j] = number;
+            number++;
+            i--;
+        }
+        i++;
+        j++;
+        k++;
+        
+    };
+    return matrix; 
+}
