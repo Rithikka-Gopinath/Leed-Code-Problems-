@@ -1,0 +1,8 @@
+int mySqrt(unsigned long long  n) {
+   unsigned long long a;
+    if (n<=0){
+        return 0;
+    }
+    a = sqrt(n);
+    return a;
+}
