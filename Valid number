@@ -1,0 +1,47 @@
+bool isDigit(char c){
+    return c >= '0' && c <= '9';
+}
+
+bool isNumber(char * s){
+    int i = 0;
+    
+    //skip spaces
+    while (s[i] && s[i]==' ') i++;
+    if (s[i] == 0) return false;
+    
+    //skip first pos/neg sign
+    if (s[i]=='+' || s[i]=='-') i++;
+    
+    //the next symbol is allowed to be a digit or a dec.point
+    if (!isDigit(s[i]) && s[i]!='.') return false;
+    
+    bool containsDigits = false;
+    bool containsDecPoint = false;
+    while (isDigit(s[i]) || s[i]=='.'){
+        if (isDigit(s[i])) containsDigits = true;   
+        if (s[i]=='.') {
+            //it is allowed to have only one dec.point
+            if (containsDecPoint) return false;
+            containsDecPoint = true;
+        }
+        i++;
+    }
+    //if we don't have any digits in our number it is not valid
+    if (!containsDigits) return false;
+    
+    //here and only here we're allowed to have an exp.sign
+    if (s[i]=='e'){
+        i++;
+        if (s[i]=='-' || s[i]=='+') i++;
+        //digits after the exp.sign are necessarily
+        if (!isDigit(s[i])) return false;
+        while (isDigit(s[i])) i++;
+    }
+    
+    //ending spaces
+    while (s[i]==' ') i++;
+    //now we must have reached the end of the string
+    if (s[i] != 0) return false;
+    
+    return true;
+}
